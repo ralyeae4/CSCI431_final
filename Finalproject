@@ -1,0 +1,437 @@
+import tkinter as tk
+from tkinter import *
+import pandas as pd
+from pandas import ExcelFile
+#import matplotlib.pyplot as plt
+
+
+Jan = 0
+Feb = 0
+Mar = 0
+Apr = 0
+May = 0
+Jun = 0
+Jul = 0
+Aug = 0
+Sep = 0
+Oct = 0
+Nov = 0
+Dec = 0
+TopMonth = ''
+
+
+def getKey(item):
+    return item[2]
+
+def auto_select():
+    theLabel = Label(root, text="The top months to book are : " + TopMonth)
+    theLabel.pack()
+
+
+def month():
+    window = tk.Toplevel()
+    T = Text(window, height=20, width=75)
+    T.pack()
+    accepted = []
+    theLabel = Label(window, text="Which Month would you like to travel in?")
+    theLabel.pack()
+    months = StringVar(window)
+    months.set("1")
+    m_choice = OptionMenu(window, months, "1", "2", "3", "4",
+                          "5", "6", "7", "8", "9",
+                          "10", "11", "12")
+    m_choice.pack()
+    def selected_month():
+        print("here")
+        for i in data.index:
+            if data['MONTH'][i] == int(months.get()):
+                if data['DEPARTURES_SCHEDULED'][i] != 0 and data['SEATS'][i] != 0:
+                    scheduled = data['DEPARTURES_SCHEDULED'][i]
+                    actual = data['DEPARTURES_PERFORMED'][i]
+                    percentage = (actual/scheduled)*100
+                    seat = data['SEATS'][i]
+                    actual_seat = seat * actual * (percentage/100)
+                    accepted.extend([(i, percentage, actual_seat)])
+                    print("added "+ str(i) +" " + str(percentage))
+                if  data['DEPARTURES_SCHEDULED'][i] == 0 and data['DEPARTURES_PERFORMED'][i] != 0 and data['SEATS'][i] != 0:
+                    actual = data['DEPARTURES_PERFORMED'][i]
+                    percentage = actual * 100
+                    seat = data['SEATS'][i]
+                    actual_seat = seat * actual
+                    accepted.extend([(i, percentage, actual_seat)])
+                    print("added " + str(i) + " " + str(percentage))
+        sorted(accepted, key=getKey)
+        T.insert(END, "Top flights: \n")
+        T.insert(END, "Carrier              Origin   Destination  Month\n")
+        if len(accepted) < 3:
+            for v in range(0, len(accepted)):
+                x = accepted[v][0]
+                T.insert(END, data['UNIQUE_CARRIER_NAME'][x] + " " + data['ORIGIN'][x] + " " + data['DEST'][x] + " " +
+                         str(data['MONTH'][x]) + "\n")
+        else:
+            for v in range(0, 3):
+                x = accepted[v][0]
+                T.insert(END,
+                         data['UNIQUE_CARRIER_NAME'][x] + " " + data['ORIGIN'][x] + " " + data['DEST'][x] + " " +
+                         str(data['MONTH'][x]) + "\n")
+
+    button_select = Button(window, text="Select", command=selected_month)
+    button_select.pack()
+
+
+
+def destination():
+    window = tk.Toplevel()
+    T = Text(window, height=20, width=75)
+    T.pack()
+    accepted = []
+    theLabel = Label(window, text="Where would you like to go?")
+    theLabel.pack()
+    state = StringVar(window)
+    state.set("TX")
+    m_choice = OptionMenu(window, state, "AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DE", "FL",
+                          "GA", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME",
+                          "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM",
+                          "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN",
+                          "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY")
+    m_choice.pack()
+    def selected_destination():
+        for i in data.index:
+            if data['DEST_STATE_ABR'][i] == state.get():
+                if data['DEPARTURES_SCHEDULED'][i] != 0 and data['SEATS'][i] != 0:
+                    scheduled = data['DEPARTURES_SCHEDULED'][i]
+                    actual = data['DEPARTURES_PERFORMED'][i]
+                    percentage = (actual / scheduled) * 100
+                    seat = data['SEATS'][i]
+                    actual_seat = seat * actual * (percentage / 100)
+                    accepted.extend([(i, percentage, actual_seat)])
+                    print("added " + str(i) + " " + str(percentage))
+                if data['DEPARTURES_SCHEDULED'][i] == 0 and data['DEPARTURES_PERFORMED'][i] != 0 and data['SEATS'][
+                    i] != 0:
+                    actual = data['DEPARTURES_PERFORMED'][i]
+                    percentage = actual * 100
+                    seat = data['SEATS'][i]
+                    actual_seat = seat * actual
+                    accepted.extend([(i, percentage, actual_seat)])
+                    print("added " + str(i) + " " + str(percentage))
+        sorted(accepted, key=getKey)
+        T.insert(END, "Top flights: \n")
+        T.insert(END, "Carrier              Origin   Destination  Month\n")
+        if len(accepted) < 3:
+            for v in range(0, len(accepted)):
+                x = accepted[v][0]
+                T.insert(END,
+                         data['UNIQUE_CARRIER_NAME'][x] + " " + data['ORIGIN'][x] + " " + data['DEST'][x] + " " +
+                         str(data['MONTH'][x]) + "\n")
+        else:
+            for v in range(0, 3):
+                x = accepted[v][0]
+                T.insert(END,
+                         data['UNIQUE_CARRIER_NAME'][x] + " " + data['ORIGIN'][x] + " " + data['DEST'][x] + " " +
+                         str(data['MONTH'][x]) + "\n")
+
+    button_select = Button(window, text="Select", command=selected_destination)
+    button_select.pack()
+
+
+def starting_point():
+     window = tk.Toplevel()
+     T = Text(window, height=20, width=75)
+     T.pack()
+     accepted = []
+     theLabel = Label(window, text="Where are you leaving from?")
+     theLabel.pack()
+     state = StringVar(window)
+     state.set("TX")
+     m_choice = OptionMenu(window, state, "AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DE", "FL",
+                           "GA", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME",
+                           "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM",
+                           "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN",
+                           "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY")
+     m_choice.pack()
+     def selected_start():
+         for i in data.index:
+             if data['ORIGIN_STATE_ABR'][i] == state.get():
+                 if data['DEPARTURES_SCHEDULED'][i] != 0 and data['SEATS'][i] != 0:
+                     scheduled = data['DEPARTURES_SCHEDULED'][i]
+                     actual = data['DEPARTURES_PERFORMED'][i]
+                     percentage = (actual / scheduled) * 100
+                     seat = data['SEATS'][i]
+                     actual_seat = seat * actual * (percentage / 100)
+                     accepted.extend([(i, percentage, actual_seat)])
+                     print("added " + str(i) + " " + str(percentage))
+                 if data['DEPARTURES_SCHEDULED'][i] == 0 and data['DEPARTURES_PERFORMED'][i] != 0 and data['SEATS'][
+                     i] != 0:
+                     actual = data['DEPARTURES_PERFORMED'][i]
+                     percentage = actual * 100
+                     seat = data['SEATS'][i]
+                     actual_seat = seat * actual
+                     accepted.extend([(i, percentage, actual_seat)])
+                     print("added " + str(i) + " " + str(percentage))
+             sorted(accepted, key=getKey)
+         T.insert(END, "Top flights: \n")
+         T.insert(END, "Carrier              Origin   Destination  Month\n")
+         if len(accepted) < 3:
+            for v in range(0, len(accepted)):
+               x = accepted[v][0]
+               T.insert(END,
+                  data['UNIQUE_CARRIER_NAME'][x] + " " + data['ORIGIN'][x] + " " + data['DEST'][x] + " " +
+                              str(data['MONTH'][x]) + "\n")
+         else:
+             for v in range(0, 3):
+                 x = accepted[v][0]
+                 T.insert(END,
+                          data['UNIQUE_CARRIER_NAME'][x] + " " + data['ORIGIN'][x] + " " + data['DEST'][x] + " " +
+                          str(data['MONTH'][x]) + "\n")
+
+     button_select = Button(window, text="Select", command=selected_start)
+     button_select.pack()
+
+def destination_month():
+     window = tk.Toplevel()
+     T = Text(window, height=20, width=75)
+     T.pack()
+     accepted = []
+     theLabel = Label(window, text="Where would you like to go?")
+     theLabel.pack()
+     state = StringVar(window)
+     state.set("TX")
+     m_choice = OptionMenu(window, state, "AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DE", "FL",
+                           "GA", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME",
+                           "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM",
+                           "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN",
+                           "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY")
+     m_choice.pack()
+     theLabel = Label(window, text="When do you want to leave?")
+     theLabel.pack()
+     months = StringVar(window)
+     months.set("1")
+     choice = OptionMenu(window, months, "1", "2", "3", "4",
+                           "5", "6", "7", "8", "9",
+                           "10", "11", "12")
+     choice.pack()
+     def selected_dest_month():
+         for i in data.index:
+             if data['DEST_STATE_ABR'][i] == state.get() and data['MONTH'][i] == int(months.get()):
+                 if data['DEPARTURES_SCHEDULED'][i] != 0 and data['SEATS'][i] != 0:
+                     scheduled = data['DEPARTURES_SCHEDULED'][i]
+                     actual = data['DEPARTURES_PERFORMED'][i]
+                     percentage = (actual / scheduled) * 100
+                     seat = data['SEATS'][i]
+                     actual_seat = seat * actual * (percentage / 100)
+                     accepted.extend([(i, percentage, actual_seat)])
+                     print("added " + str(i) + " " + str(percentage))
+                 if data['DEPARTURES_SCHEDULED'][i] == 0 and data['DEPARTURES_PERFORMED'][i] != 0 and data['SEATS'][
+                     i] != 0:
+                     actual = data['DEPARTURES_PERFORMED'][i]
+                     percentage = actual * 100
+                     seat = data['SEATS'][i]
+                     actual_seat = seat * actual
+                     accepted.extend([(i, percentage, actual_seat)])
+                     print("added " + str(i) + " " + str(percentage))
+         sorted(accepted, key=getKey)
+         T.insert(END, "Top flights: \n")
+         T.insert(END, "Carrier              Origin   Destination  Month\n")
+         if len(accepted) < 3:
+            for v in range(0, len(accepted)):
+                 x = accepted[v][0]
+                 T.insert(END, data['UNIQUE_CARRIER_NAME'][x] + " " + data['ORIGIN'][x] + " " + data['DEST'][x] + " " +
+                      str(data['MONTH'][x]) + "\n")
+         else:
+             for v in range(0, 3):
+                 x = accepted[v][0]
+                 T.insert(END,
+                          data['UNIQUE_CARRIER_NAME'][x] + " " + data['ORIGIN'][x] + " " + data['DEST'][x] + " " +
+                          str(data['MONTH'][x]) + "\n")
+
+     button_select = Button(window, text="Select", command=selected_dest_month)
+     button_select.pack()
+
+def starting_point_month():
+     window = tk.Toplevel()
+     T = Text(window, height=20, width=75)
+     T.pack()
+     accepted = []
+     theLabel = Label(window, text="Where are you leaving from?")
+     theLabel.pack()
+     state = StringVar(window)
+     state.set("TX")
+     m_choice = OptionMenu(window, state, "AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DE", "FL",
+                           "GA", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME",
+                           "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM",
+                           "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN",
+                           "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY")
+     m_choice.pack()
+     theLabel = Label(window, text="When do you want to leave?")
+     theLabel.pack()
+     months = StringVar(window)
+     months.set("1")
+     choice = OptionMenu(window, months, "1", "2", "3", "4",
+                           "5", "6", "7", "8", "9",
+                           "10", "11", "12")
+     choice.pack()
+     def selected_orig_month():
+         for i in data.index:
+             if data['ORIGIN_STATE_ABR'][i] == state.get() and data['MONTH'][i] == int(months.get()):
+                 if data['DEPARTURES_SCHEDULED'][i] != 0 and data['SEATS'][i] != 0:
+                     scheduled = data['DEPARTURES_SCHEDULED'][i]
+                     actual = data['DEPARTURES_PERFORMED'][i]
+                     percentage = (actual / scheduled) * 100
+                     seat = data['SEATS'][i]
+                     actual_seat = seat * actual * (percentage / 100)
+                     accepted.extend([(i, percentage, actual_seat)])
+                     print("added " + str(i) + " " + str(percentage))
+                 if data['DEPARTURES_SCHEDULED'][i] == 0 and data['DEPARTURES_PERFORMED'][i] != 0 and data['SEATS'][
+                     i] != 0:
+                     actual = data['DEPARTURES_PERFORMED'][i]
+                     percentage = actual * 100
+                     seat = data['SEATS'][i]
+                     actual_seat = seat * actual
+                     accepted.extend([(i, percentage, actual_seat)])
+                     print("added " + str(i) + " " + str(percentage))
+         sorted(accepted, key=getKey)
+         T.insert(END, "Top flights: \n")
+         T.insert(END, "Carrier              Origin   Destination  Month\n")
+         if len(accepted) < 3:
+             for v in range(0, len(accepted)):
+                 x = accepted[v][0]
+                 T.insert(END,
+                          data['UNIQUE_CARRIER_NAME'][x] + " " + data['ORIGIN'][x] + " " + data['DEST'][x] + " " +
+                          str(data['MONTH'][x]) + "\n")
+         else:
+             for v in range(0, 3):
+                 x = accepted[v][0]
+                 T.insert(END,
+                          data['UNIQUE_CARRIER_NAME'][x] + " " + data['ORIGIN'][x] + " " + data['DEST'][x] + " " +
+                          str(data['MONTH'][x]) + "\n")
+
+     button_select = Button(window, text="Select", command=selected_orig_month)
+     button_select.pack()
+
+def starting_point_destination():
+     window = tk.Toplevel()
+     T = Text(window, height=20, width=75)
+     T.pack()
+     accepted = []
+     theLabel = Label(window, text="Where are you leaving from?")
+     theLabel.pack()
+     orig = StringVar(window)
+     orig.set("TX")
+     m_choice = OptionMenu(window, orig, "AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DE", "FL",
+                           "GA", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME",
+                           "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM",
+                           "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN",
+                           "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY")
+     m_choice.pack()
+     theLabel = Label(window, text="Where do you want to go?")
+     theLabel.pack()
+     des = StringVar(window)
+     des.set("TX")
+     choice = OptionMenu(window, des, "AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DE", "FL",
+                           "GA", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME",
+                           "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM",
+                           "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN",
+                           "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY")
+     choice.pack()
+     def selected_dest_orig():
+         for i in data.index:
+             if data['DEST_STATE_ABR'][i] == des.get() and data['ORIGIN_STATE_ABR'][i] == orig.get():
+                 if data['DEPARTURES_SCHEDULED'][i] != 0 and data['SEATS'][i] != 0:
+                     scheduled = data['DEPARTURES_SCHEDULED'][i]
+                     actual = data['DEPARTURES_PERFORMED'][i]
+                     percentage = (actual / scheduled) * 100
+                     seat = data['SEATS'][i]
+                     actual_seat = seat * actual * (percentage / 100)
+                     accepted.extend([(i, percentage, actual_seat)])
+                     print("added " + str(i) + " " + str(percentage))
+                 if data['DEPARTURES_SCHEDULED'][i] == 0 and data['DEPARTURES_PERFORMED'][i] != 0 and data['SEATS'][
+                     i] != 0:
+                     actual = data['DEPARTURES_PERFORMED'][i]
+                     percentage = actual * 100
+                     seat = data['SEATS'][i]
+                     actual_seat = seat * actual
+                     accepted.extend([(i, percentage, actual_seat)])
+                     print("added " + str(i) + " " + str(percentage))
+         sorted(accepted, key=getKey)
+         T.insert(END, "Top flights: \n")
+         T.insert(END, "Carrier              Origin   Destination  Month\n")
+         if len(accepted) < 3:
+             for v in range(0, len(accepted)):
+                 x = accepted[v][0]
+                 T.insert(END,
+                          data['UNIQUE_CARRIER_NAME'][x] + " " + data['ORIGIN'][x] + " " + data['DEST'][x] + " " +
+                          str(data['MONTH'][x]) + "\n")
+         else:
+             for v in range(0, 3):
+                 x = accepted[v][0]
+                 T.insert(END,
+                          data['UNIQUE_CARRIER_NAME'][x] + " " + data['ORIGIN'][x] + " " + data['DEST'][x] + " " +
+                          str(data['MONTH'][x]) + "\n")
+
+     button_select = Button(window, text="Select", command=selected_dest_orig)
+     button_select.pack()
+
+
+
+
+data = pd.read_excel('ProjectDataS18NCSC2017.xlsx')
+for i in data.index:
+    #print(data['MONTH'][i])
+    if data['MONTH'][i] == 1:
+        Jan += 1
+    if data['MONTH'][i] == 2:
+        Feb += 1
+    if data['MONTH'][i] == 3:
+        Mar += 1
+    if data['MONTH'][i] == 4:
+        Apr += 1
+    if data['MONTH'][i] == 5:
+        May += 1
+    if data['MONTH'][i] == 6:
+        Jun += 1
+    if data['MONTH'][i] == 7:
+        Jul += 1
+    if data['MONTH'][i] == 8:
+        Aug += 1
+    if data['MONTH'][i] == 9:
+        Sep += 1
+    if data['MONTH'][i] == 10:
+        Oct += 1
+    if data['MONTH'][i] == 11:
+        Nov += 1
+    if data['MONTH'][i] == 12:
+        Dec += 1
+
+
+Month_List = [(Jan, 'January'), (Feb, 'February'), (Mar,'March'),
+              (Apr,'April'), (May, 'May'), (Jun, 'June'),
+              (Jul, 'July'), (Aug, 'August'), (Sep, 'September'),
+              (Oct, 'October'), (Nov, 'November'), (Dec, 'December')]
+Month_List.sort()
+
+for x in range (9, 12):
+   TopMonth += Month_List[x][1] +" "
+
+
+root = Tk()
+theLabel = Label(root, text = "Please make a choice:")
+theLabel.pack()
+
+
+button = Button(root, text="Auto Selected", command=auto_select)
+button.pack()
+button = Button(root, text="Month", command=month)
+button.pack()
+button = Button(root, text="Destination", command=destination)
+button.pack()
+button = Button(root, text="Starting Point", command=starting_point)
+button.pack()
+button = Button(root, text="Destination & Month", command=destination_month)
+button.pack()
+button = Button(root, text="Starting Point & Month", command=starting_point_month)
+button.pack()
+button = Button(root, text="Starting Point & Destination", command=starting_point_destination)
+button.pack()
+
+
+root.mainloop()
